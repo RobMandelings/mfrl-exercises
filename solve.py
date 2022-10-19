@@ -19,9 +19,9 @@ of going from state i to state j when doing action a.
 => Is not a transition matrix as the probabilty of performing action a 
 is not yet included (transition matrices are induced by policies)
 """
-markov_properties = {i: {j: {a: 0 for a in range(env.nA)}
-                         for j in range(env.nS)}
-                     for i in range(env.nS)}
+markov_props = {i: {j: {a: 0 for a in range(env.nA)}
+                    for j in range(env.nS)}
+                for i in range(env.nS)}
 
 """
 Row (i, j): results in tuple, each element: reward for doing action
@@ -37,7 +37,7 @@ reward_matrix = {i: {a: 0 for a in range(env.nA)} for i in range(env.nS)}
 for i in range(env.nS):
     for a in range(env.nA):
         for (p, j, r, d) in env.P[i][a]:
-            markov_properties[i][j][a] += p
+            markov_props[i][j][a] += p
             reward_matrix[i][a] += r * p
 
 # Policy computation: here's where YOU code
@@ -45,10 +45,12 @@ for i in range(env.nS):
 Insert your clever policy computation here! make sure to replace the
 policy dictionary below by the results of your computation
 """
-T = 2  # Given horizon
-policy = {t: {i: env.action_space.sample()
-              for i in range(env.nS)}
-          for t in range(T)}
+T = 10  # Given horizon
+# policy = {t: {i: env.action_space.sample()
+#               for i in range(env.nS)}
+#           for t in range(T)}
+
+policy, value_vector = util.create_policy(reward_matrix, markov_props, env.nA, T)
 
 # list(map(lambda x: sum(x.values()), list(prob[i].values())))
 # Probabilities to get from state i to another state (choosing any action)
@@ -79,5 +81,3 @@ if True:
             print(f"Episode finished after {t + 1} timesteps")
             break
     env.close()
-
-util.create_transition_matrix_for_rule(markov_properties, )
