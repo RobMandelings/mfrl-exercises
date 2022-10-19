@@ -1,73 +1,12 @@
-def create_policy(reward_matrix, markov_props, nr_actions, T):
-    """
-    Creates the optimal policy for this problem using backwards induction
-    :param reward_matrix:
-    :param markov_props:
-    :param T: number of periods
-    :return:
-    """
-
-    x = {T: [0 for _ in range(len(markov_props))]}
-
-    policy = {}
-
-    # Argmax
-    for t in reversed(range(T)):
-        decision_rule = create_decision_rule(reward_matrix, markov_props, nr_actions, x[t + 1])
-        policy[t] = decision_rule  # Insert new rule at the front of list
-
-        if t > 0:
-            x[t] = create_x_t(reward_matrix, markov_props, decision_rule, x[t + 1])
-
-    value_vector = x[1]
-
-    return policy, value_vector
+import numpy as np
 
 
-def create_decision_rule(reward_matrix, markov_props, nr_actions, x_t_plus_1):
-    nr_states = len(markov_props)
-    decision_rule = {}
-    for i in range(nr_states):
-        best_result = 0
-        for a in range(nr_actions):
-            reward = reward_matrix[i][a]
-            weighted_sum = 0
-            for j in range(nr_states):
-                weighted_sum += (markov_props[i][j][a] * x_t_plus_1[j])
-
-            result = (reward + weighted_sum)
-            if result >= best_result:
-                best_result = result
-                decision_rule[i] = a
-
-    assert len(decision_rule.keys()) == nr_states
-    return decision_rule
+def mult_trans_matrix(matrix1: np.array, matrix2: np.array):
+    return np.matmul(matrix1, matrix2)
 
 
-def create_x_t(reward_matrix, markov_props, decision_rule_f_t, x_t_plus_1):
-    reward_vector = create_reward_vector_for_rule(reward_matrix, decision_rule_f_t)
-    transition_matrix = create_transition_matrix_for_rule(markov_props, decision_rule_f_t)
-
-    x_t = [reward_vector[i] for i in reward_vector.keys()]
-
-    for i in range(len(transition_matrix)):
-        result = zip(transition_matrix[i].values(), x_t_plus_1)
-        result = map(lambda x: x[0] * x[1], result)
-        x_t[i] += sum(result)
-
-    return x_t
-
-
-def create_reward_vector_for_rule(reward_matrix, deterministic_rule):
-    """
-    :return: Returns the rewards for the deterministic rule
-    """
-    reward_vector = {i: reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())}
-    return reward_vector
-
-
-def create_transition_matrix_for_rule(markov_properties, deterministic_rule):
-    transition_matrix = {i: {j: None for j in range(len(markov_properties))} for i in range(len(markov_properties))}
+def create_transition_matrix_for_rule(markov_properties, deterministic_rule) -> np.array:
+    transition_matrix = np.zeros((len(markov_properties), len(markov_properties)))
 
     for i in range(len(markov_properties)):
         # Probability 1, no weighted sum of probabilities required
@@ -76,3 +15,30 @@ def create_transition_matrix_for_rule(markov_properties, deterministic_rule):
             result = markov_properties[i][j][chosen_action]
             transition_matrix[i][j] = result
     return transition_matrix
+
+
+def calculate_total_expected_reward(nr_states, nr_actions, start_state, markov_props, reward_matrix, policy):
+    expected_reward_per_period = []
+    res_transition_matrix = np.identity(nr_states)
+
+    for period, rule in policy.items():
+        cur_trans_matrix = create_transition_matrix_for_rule(markov_props, rule)
+        res_transition_matrix = mult_trans_matrix(res_transition_matrix, cur_trans_matrix)
+
+        transition_probs_from_start = res_transition_matrix[start_state]
+
+        expected_rewards = []
+        for j in range(nr_states):
+            for a in range(nr_actions):
+                # Probability to get to state j with action a, starting from state i
+                prob_going_to_j = transition_probs_from_start[j]
+                # Reward for going to state j with action a
+                prob_a_chosen_at_j = int((rule[j] == a))
+                # Probability of going to state j and choosing action a
+                prob_going_to_state_j_choosing_a = prob_going_to_j * prob_a_chosen_at_j
+                reward_going_state_j_choosing_a = prob_going_to_state_j_choosing_a * reward_matrix[j][a]
+                expected_rewards.append(reward_going_state_j_choosing_a)
+
+        expected_reward_per_period.append(sum(expected_rewards))
+
+    return sum(expected_reward_per_period)

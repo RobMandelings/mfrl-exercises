@@ -1,9 +1,10 @@
 import gym
 
-import util
-
+import backwards_induction
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
+import util
+
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None)
 """
 DiscreteEnv has an attribute P which holds everything er want as a
@@ -45,12 +46,20 @@ for i in range(env.nS):
 Insert your clever policy computation here! make sure to replace the
 policy dictionary below by the results of your computation
 """
-T = 10  # Given horizon
-# policy = {t: {i: env.action_space.sample()
-#               for i in range(env.nS)}
-#           for t in range(T)}
+T = 1000  # Given horizon
+policy_random = {t: {i: env.action_space.sample()
+                     for i in range(env.nS)}
+                 for t in range(T)}
 
-policy, value_vector = util.create_policy(reward_matrix, markov_props, env.nA, T)
+expected_reward = util.calculate_total_expected_reward(env.nS, env.nA, 0, markov_props, reward_matrix, policy_random)
+print(expected_reward)
+
+policy, value_vector = backwards_induction.create_policy(reward_matrix, markov_props, env.nA, T)
+
+expected_reward_backward_induction = util.calculate_total_expected_reward(env.nS, env.nA, 0, markov_props,
+                                                                          reward_matrix, policy)
+
+print('hi')
 
 # list(map(lambda x: sum(x.values()), list(prob[i].values())))
 # Probabilities to get from state i to another state (choosing any action)
@@ -73,11 +82,25 @@ if True:
     state = env.reset()
     for t in range(T):
         env.render()
-        action = policy[t][state]
+        action = policy_random[t][state]
         print(f"Action = {action}")
         state, reward, done, _ = env.step(action)
         # if the MDP is stuck, we end the simulation here
         if done:
+            env.render()
             print(f"Episode finished after {t + 1} timesteps")
             break
     env.close()
+
+# if True:
+#     state = env.reset()
+#     for t in range(T):
+#         env.render()
+#         action = policy_random[t][state]
+#         print(f"Action = {action}")
+#         state, reward, done, _ = env.step(action)
+#         # if the MDP is stuck, we end the simulation here
+#         if done:
+#             print(f"Episode finished after {t + 1} timesteps")
+#             break
+#     env.close()
