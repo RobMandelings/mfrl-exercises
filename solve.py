@@ -1,5 +1,7 @@
 import gym
 
+import util
+
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None)
@@ -78,61 +80,4 @@ if True:
             break
     env.close()
 
-
-def create_policy(reward_matrix, prob_matrix):
-    """
-    Creates the optimal policy for this problem using backwards induction
-    :param reward_matrix:
-    :param prob_matrix:
-    :return:
-    """
-
-    pass
-
-
-def create_x_t(decision_rule_f_t, x_t_plus_1):
-    reward_vector = create_reward_vector_for_rule(reward_matrix, decision_rule_f_t)
-    transition_matrix = create_transition_matrix_for_rule(markov_properties, decision_rule_f_t)
-    pass
-
-
-# Creates f_t using the formula
-def create_decision_rule(reward_matrix, markov_properties, x_t_plus_1):
-    """
-    Creates a decision rule based using backwards induction
-    :param reward_matrix:
-    :param markov_properties:
-    :param x_t_plus_1:
-    :return:
-    """
-
-    decision_rule = list()
-
-    for i in range(len(env.nS)):
-        chosen_action = None
-        best_result = 0
-        for a in range(len(env.nA)):
-            result = reward_matrix[i][a]
-
-            for j in range(len(env.nS)):
-                result += markov_properties[i][j][a] * x_t_plus_1[j]
-
-            if result >= best_result:
-                chosen_action = a
-
-        assert chosen_action is not None, "There should always be a chosen action!"
-        decision_rule.append(chosen_action)
-
-    return decision_rule
-
-
-def create_reward_vector_for_rule(reward_matrix, deterministic_rule):
-    """
-    :return: Returns the rewards for the deterministic rule
-    """
-    reward_vector = {i: reward_matrix[i][a] for i, a in enumerate(deterministic_rule)}
-    return reward_vector
-
-
-def create_transition_matrix_for_rule(markov_properties, deterministic_rule):
-    pass
+util.create_transition_matrix_for_rule(markov_properties, )
