@@ -1,9 +1,10 @@
 import gym
 
 import backwards_induction
+import util
+
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
-import util
 
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None)
 """
@@ -51,23 +52,6 @@ policy_random = {t: {i: env.action_space.sample()
                      for i in range(env.nS)}
                  for t in range(T)}
 
-expected_reward = util.calculate_total_expected_reward(env.nS, env.nA, 0, markov_props, reward_matrix, policy_random)
-print(expected_reward)
-
-policy, value_vector = backwards_induction.create_policy(reward_matrix, markov_props, env.nA, T)
-
-expected_reward_backward_induction = util.calculate_total_expected_reward(env.nS, env.nA, 0, markov_props,
-                                                                          reward_matrix, policy)
-
-print('hi')
-
-# list(map(lambda x: sum(x.values()), list(prob[i].values())))
-# Probabilities to get from state i to another state (choosing any action)
-
-# Probability for choosing action 3
-# list(map(lambda x: x[3], list(prob[62].values())))
-
-
 # Policy evaluation: here's where YOU also code
 """
 Insert here your code to evaluate
@@ -76,6 +60,9 @@ if one follows your policy. Do the same for a random policy (i.e. the
 sample policy given above). As a sanity check, your policy should get an
 expected reward of at least the one obtained by the random policy!
 """
+
+expected_reward = util.calculate_total_expected_reward(env.nS, env.nA, 0, markov_props, reward_matrix, policy_random)
+policy, value_vector = backwards_induction.create_policy(reward_matrix, markov_props, env.nA, T)
 
 # Simulation: you can try your policy here, just remove the false conditional
 if True:
