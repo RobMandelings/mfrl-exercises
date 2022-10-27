@@ -1,10 +1,9 @@
 import gym
 
 import policy_iteration
-import util
-
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
+import util
 
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
 """
@@ -49,8 +48,10 @@ policy_random = {t: {i: env.action_space.sample()
                      for i in range(env.observation_space.n)}
                  for t in range(T)}
 
+random_decision_rule = policy_random[0]
+
 alpha = 0.999
-policy, value_vector = policy_iteration.create_policy(alpha, policy_random[0], markov_props, reward_matrix,
+policy, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
                                                       env.observation_space.n,
                                                       env.action_space.n)
 
@@ -64,8 +65,12 @@ expected reward of at least the one obtained by the random policy!
 """
 
 expected_reward_policy_iteration = value_vector[0]
-expected_reward_random = util.calculate_total_expected_reward(env.observation_space.n, env.action_space.n, 0,
-                                                              markov_props, reward_matrix, policy_random)
+expected_reward_random_policy_finite_horizon = util.calculate_total_expected_reward(env.observation_space.n,
+                                                                                    env.action_space.n, 0, markov_props,
+                                                                                    reward_matrix, policy_random)
+expected_reward_random_stationary_policy = policy_iteration.convert_to_dict(
+    policy_iteration.compute_value_vector(alpha, random_decision_rule,
+                                          markov_props, reward_matrix))[0]
 
 # Simulation: you can try your policy here, just remove the false conditional
 if True:
@@ -83,5 +88,7 @@ if True:
             break
     env.close()
 
-print(f'Expected reward for the Random Policy: {expected_reward_random}')
+print(f'Expected reward for the Random Policy (finite horizon): {expected_reward_random_policy_finite_horizon}')
+print(
+    f'Expected reward for the Random Stationary Policy (infinite horizon): {expected_reward_random_stationary_policy}')
 print(f'Expected reward for the Policy With Policy Iteration: {expected_reward_policy_iteration}')
