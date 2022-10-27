@@ -20,6 +20,7 @@ def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_acti
     """
 
     result = None
+    nr_iterations = 0
 
     while result is None:
         p = util.create_transition_matrix_for_rule(markov_properties, f)
@@ -58,5 +59,6 @@ def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_acti
         else:
             # Return policy and value vector. Value vector will be returned as a dictionary
             result = f, dict(enumerate(value_vector, 0))
+        nr_iterations += 1
 
     return result
