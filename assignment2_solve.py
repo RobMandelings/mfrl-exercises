@@ -6,7 +6,7 @@ import util
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
 
-env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None)
+env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
 """
 DiscreteEnv has an attribute P which holds everything er want as a
 dictionary of lists:
