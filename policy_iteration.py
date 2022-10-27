@@ -11,7 +11,7 @@ import util
 
 def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_actions):
     """
-
+    Creates a stationary deterministic policy using the policy iteration algorithm
     :param alpha:
     :param f: the start policy (stationary, simply a dict with each state as key and each action as value
     :param markov_properties:
@@ -19,9 +19,9 @@ def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_acti
     :return:
     """
 
-    optimal_found = False
+    result = None
 
-    while not optimal_found:
+    while result is None:
         p = util.create_transition_matrix_for_rule(markov_properties, f)
         reward_vector = np.asarray(list(util.create_reward_vector_for_rule(reward_matrix, f).values()))
         value_vector = np.linalg.inv(np.identity(len(p)) - alpha * p).dot(reward_vector)
@@ -56,6 +56,7 @@ def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_acti
 
             f = g
         else:
-            optimal_found = True
+            # Return policy and value vector. Value vector will be returned as a dictionary
+            result = f, dict(enumerate(value_vector, 0))
 
-    return f
+    return result

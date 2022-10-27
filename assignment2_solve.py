@@ -1,6 +1,7 @@
 import gym
 
 import policy_iteration
+import util
 
 # We will load a DiscreteEnv and retrieve the probability and reward
 # information
@@ -61,8 +62,13 @@ expected reward of at least the one obtained by the random policy!
 """
 
 alpha = 0.99
-policy = policy_iteration.create_policy(alpha, policy_random[0], markov_props, reward_matrix, env.observation_space.n,
-                                        env.action_space.n)
+policy, value_vector = policy_iteration.create_policy(alpha, policy_random[0], markov_props, reward_matrix,
+                                                      env.observation_space.n,
+                                                      env.action_space.n)
+
+expected_reward_policy_iteration = value_vector[0]
+expected_reward_random = util.calculate_total_expected_reward(env.observation_space.n, env.action_space.n, 0,
+                                                              markov_props, reward_matrix, policy_random)
 
 # Simulation: you can try your policy here, just remove the false conditional
 if True:
@@ -78,3 +84,6 @@ if True:
             print(f"Episode finished after {t + 1} timesteps")
             break
     env.close()
+
+print(f'Expected reward for the Random Policy: {expected_reward_random}')
+print(f'Expected reward for the Policy With Policy Iteration: {expected_reward_policy_iteration}')
