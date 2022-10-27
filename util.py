@@ -42,3 +42,11 @@ def calculate_total_expected_reward(nr_states, nr_actions, start_state, markov_p
         expected_reward_per_period.append(sum(expected_rewards))
 
     return sum(expected_reward_per_period)
+
+
+def create_reward_vector_for_rule(reward_matrix, deterministic_rule):
+    """
+    :return: Returns the rewards for the deterministic rule
+    """
+    reward_vector = {i: reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())}
+    return reward_vector

@@ -48,7 +48,7 @@ def create_decision_rule(reward_matrix, markov_props, nr_actions, x_t_plus_1):
 
 
 def create_x_t(reward_matrix, markov_props, decision_rule_f_t, x_t_plus_1):
-    reward_vector = create_reward_vector_for_rule(reward_matrix, decision_rule_f_t)
+    reward_vector = util.create_reward_vector_for_rule(reward_matrix, decision_rule_f_t)
     transition_matrix = util.create_transition_matrix_for_rule(markov_props, decision_rule_f_t)
 
     x_t = [reward_vector[i] for i in reward_vector.keys()]
@@ -59,11 +59,3 @@ def create_x_t(reward_matrix, markov_props, decision_rule_f_t, x_t_plus_1):
         x_t[i] += sum(result)
 
     return x_t
-
-
-def create_reward_vector_for_rule(reward_matrix, deterministic_rule):
-    """
-    :return: Returns the rewards for the deterministic rule
-    """
-    reward_vector = {i: reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())}
-    return reward_vector
