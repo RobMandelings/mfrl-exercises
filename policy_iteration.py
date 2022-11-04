@@ -52,9 +52,10 @@ def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_acti
 
         for i in range(nr_states):
             for a in range(nr_actions):
-                s_ia_f = reward_matrix[i][a] + alpha * functools.reduce(
-                    lambda agg, j: agg + (markov_properties[i][j][a] * value_vector[j]),
-                    range(nr_states)) - value_vector[i]
+                summation = 0
+                for j in range(nr_states):
+                    summation += (markov_properties[i][j][a] * value_vector[j])
+                s_ia_f = reward_matrix[i][a] + alpha * summation - value_vector[i]
                 s_f_dict[i][a] = s_ia_f
 
         improving_actions = {i: set() for i in range(nr_states)}
