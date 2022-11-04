@@ -5,7 +5,15 @@ import policy_iteration
 # information
 import util
 
-env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
+env = gym.make("FrozenLake8x8-v1", desc=[
+    "SHHHHHHH",
+    "FFFFFFFH",
+    "FHHHHHFH",
+    "FHHHHHFH",
+    "FHHHHHFH",
+    "FHHHHHFH",
+    "FHFFFHFH",
+    "FFFHFFFG"], map_name=None, is_slippery=True)
 """
 DiscreteEnv has an attribute P which holds everything er want as a
 dictionary of lists:
@@ -92,3 +100,5 @@ print(f'Expected reward for the Random Policy (finite horizon): {expected_reward
 print(
     f'Expected reward for the Random Stationary Policy (infinite horizon): {expected_reward_random_stationary_policy}')
 print(f'Expected reward for the Policy With Policy Iteration: {expected_reward_policy_iteration}')
+
+print(f'Policy at 8: {policy[8]}')
