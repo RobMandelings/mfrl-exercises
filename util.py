@@ -1,6 +1,30 @@
 import numpy as np
 
 
+def compute_value_vector(alpha, stationary_policy, markov_properties, reward_matrix):
+    """
+    Computes the value vector using the provided data, for a total expected discount problem
+    :param alpha: parameter used for infinite horizons
+    :param stationary_policy: dictionary with <state, action> key-value pairs
+    :param markov_properties: matrix containing all markov properties
+    :param reward_matrix: matrix in dictionary form representing the rewards for each action from each state
+    :return: value vector for a stationary policy with infinite horizon
+    """
+    p = create_transition_matrix_for_rule(markov_properties, stationary_policy)
+    reward_vector = np.asarray(list(create_reward_vector_for_rule(reward_matrix, stationary_policy).values()))
+    value_vector = np.linalg.inv(np.identity(len(p)) - alpha * p).dot(reward_vector)
+    return value_vector
+
+
+def convert_to_dict(value_vector: np.array):
+    """
+    Converts the value vector into a numpy array
+    :param value_vector:
+    :return: dictionary where each start state is a key and each expected reward is a value
+    """
+    return dict(enumerate(value_vector, 0))
+
+
 def mult_trans_matrix(matrix1: np.array, matrix2: np.array):
     return np.matmul(matrix1, matrix2)
 
