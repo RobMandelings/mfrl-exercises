@@ -41,6 +41,16 @@ def create_y_and_f(alpha, x: np.array, nr_states, nr_actions, markov_properties,
 
 
 def create_policy(alpha, epsilon, nr_states, nr_actions, markov_properties, reward_matrix):
+    """
+    Creates the policy using the value-iteration algorithm
+    :param alpha:
+    :param epsilon:
+    :param nr_states:
+    :param nr_actions:
+    :param markov_properties:
+    :param reward_matrix:
+    :return:
+    """
     bound = (1 - alpha) * epsilon / (2 * alpha)
 
     x = np.zeros(shape=nr_states)
