@@ -66,6 +66,11 @@ expected_reward_random_stationary_policy = util.convert_to_dict(
 
 policy = None
 
+# TODO compute average reward of random policy using theorem 1.4.7 (item 1)
+# TODO output the policy for this assignment
+# TODO You print or assert in the code that the average-reward value vector
+# TODO (that is, \phi) of your policy is at least that of the random policy.
+
 # Simulation: you can try your policy here, just remove the false conditional
 if True:
     state = env.reset()
