@@ -2,6 +2,8 @@ import typing
 
 import numpy as np
 
+import util
+
 
 def compute_stationary_matrix(transition_matrix: np.matrix) -> np.matrix:
     approximate = np.matrix(np.identity(transition_matrix.size))
@@ -27,11 +29,11 @@ def compute_avg_reward(stationary_matrix: np.matrix, reward_vector: np.array) ->
     return np.dot(stationary_matrix, reward_vector)
 
 
-def compute_u_0(deviation_matrix, reward_matrix) -> np.array:
+def compute_u_0(deviation_matrix, reward_vector) -> np.array:
     """
     :return: 1-D array u_0
     """
-    return np.dot(deviation_matrix, reward_matrix)
+    return np.dot(deviation_matrix, reward_vector)
 
 
 def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
@@ -60,4 +62,38 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
 
 
 def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
-    pass
+    """
+    :param alpha:
+    :param f: initial deterministic policy
+    :param markov_props:
+    :param reward_matrix:
+    :param nr_states:
+    :param nr_actions:
+    :return:
+    """
+
+    optimal_found = False
+    policy = f
+    while not optimal_found:
+
+        transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
+        reward_vector = util.create_reward_vector_for_rule(reward_matrix, policy)
+        stationary_matrix = compute_stationary_matrix(transition_matrix)
+        fundamental_matrix = compute_fundamental_matrix(transition_matrix, stationary_matrix)
+        deviation_matrix = compute_deviation_matrix(fundamental_matrix, stationary_matrix)
+
+        avg_reward = compute_avg_reward(stationary_matrix, reward_vector)
+        u_0 = compute_u_0(deviation_matrix, reward_vector)
+        B = compute_B(nr_states, nr_actions, markov_props, reward_matrix, avg_reward, u_0)
+
+        total_nr_actions_in_sets = sum(map(lambda actions_set: len(actions_set), B))
+        if total_nr_actions_in_sets == 0:
+            optimal_found = True
+        else:
+            g = f
+            for i, actions in B.items():
+                if len(actions) > 0:
+                    g[i] = list(actions)[0]
+            policy = g
+
+    return policy
