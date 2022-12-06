@@ -11,7 +11,7 @@ def compute_value_vector(alpha, stationary_policy, markov_properties, reward_mat
     :return: value vector for a stationary policy with infinite horizon
     """
     p = create_transition_matrix_for_rule(markov_properties, stationary_policy)
-    reward_vector = np.asarray(list(create_reward_vector_for_rule(reward_matrix, stationary_policy).values()))
+    reward_vector = create_reward_vector_for_rule(reward_matrix, stationary_policy)
     value_vector = np.linalg.inv(np.identity(len(p)) - alpha * p).dot(reward_vector)
     return value_vector
 
@@ -68,9 +68,9 @@ def calculate_total_expected_reward(nr_states, nr_actions, start_state, markov_p
     return sum(expected_reward_per_period)
 
 
-def create_reward_vector_for_rule(reward_matrix, deterministic_rule):
+def create_reward_vector_for_rule(reward_matrix, deterministic_rule) -> np.array:
     """
     :return: Returns the rewards for the deterministic rule
     """
-    reward_vector = {i: reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())}
+    reward_vector = np.array(reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values()))
     return reward_vector

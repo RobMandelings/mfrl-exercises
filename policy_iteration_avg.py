@@ -9,7 +9,7 @@ def compute_deviation_matrix() -> np.matrix:
     pass
 
 
-def compute_avg_reward(stationary_matrix, reward_matrix) -> np.array:
+def compute_avg_reward(stationary_matrix: np.matrix, reward_vector: np.array) -> np.array:
     """
     :return: 1-D array of average rewards for each state
     """
