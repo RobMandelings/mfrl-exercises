@@ -72,5 +72,5 @@ def create_reward_vector_for_rule(reward_matrix, deterministic_rule) -> np.array
     """
     :return: Returns the rewards for the deterministic rule
     """
-    reward_vector = np.array(reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values()))
+    reward_vector = np.array([reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())])
     return reward_vector

@@ -1,5 +1,6 @@
 import gym
 
+import policy_iteration_avg
 import util
 
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
@@ -57,12 +58,28 @@ sample policy given above). As a sanity check, your policy should get an
 expected reward of at least the one obtained by the random policy!
 """
 
-# expected_reward_value_iteration = value_vector[0]
-
 random_decision_rule = policy_random[0]
-expected_reward_random_stationary_policy = util.convert_to_dict(
-    util.compute_value_vector(alpha, random_decision_rule,
-                              markov_props, reward_matrix))[0]
+
+policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
+                                                        env.observation_space.n,
+                                                        env.action_space.n)
+
+transition_matrix = util.create_transition_matrix_for_rule(markov_props, random_decision_rule)
+reward_vector = util.create_reward_vector_for_rule(reward_matrix, random_decision_rule)
+
+avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
+
+# transition_matrix2 = util.create_transition_matrix_for_rule(markov_props, policy)
+# reward_vector2 = util.create_reward_vector_for_rule(reward_matrix, policy)
+# avg_reward_check = policy_iteration_avg.compute_avg_reward_and_u_0(transition_matrix2, reward_vector2)[0]
+
+reward_difference = avg_reward - avg_reward_random
+for i in range(len(reward_difference)):
+    diff = reward_difference[i]
+    assert diff >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
+
+expected_reward_random_stationary_policy = util.compute_value_vector(alpha, random_decision_rule,
+                                                                     markov_props, reward_matrix)[0]
 
 policy = None
 
