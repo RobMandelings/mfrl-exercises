@@ -1,8 +1,8 @@
 import copy
+import random
 import typing
 
 import numpy as np
-import scipy
 
 import util
 
@@ -54,8 +54,8 @@ def compute_avg_reward_and_u_0(transition_matrix: np.matrix, reward_vector: np.a
 
     # b
     dependent_variables = np.array(dependent_vars_list)
-    result = scipy.optimize.nnls(coefficient_matrix, dependent_variables)[0]
-    result2 = scipy.optimize.nnls(coefficient_matrix, dependent_variables)[0]
+    result = np.linalg.lstsq(coefficient_matrix, dependent_variables)[0]
+    result = np.array(list(map(lambda x: round(x, 10), result)))
 
     avg_reward = result[:64]
     u_0 = result[64:128]
@@ -72,16 +72,12 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
     actual_rewards = {}
     for i in range(nr_states):
         for a in range(nr_actions):
-            # new_avg_reward_inter = map(lambda j: markov_props[i][j][a] * avg_reward[j], list(range(nr_states)))
-
-            new_avg_reward = 0
-            for j in range(nr_states):
-                new_avg_reward += markov_props[i][j][a] * avg_reward[j]
+            new_avg_reward_inter = map(lambda j: markov_props[i][j][a] * avg_reward[j], list(range(nr_states)))
+            new_avg_reward = sum(new_avg_reward_inter)
 
             # TODO replace with functools?
             add_action = False
-
-            reward_difference = new_avg_reward - avg_reward[i]
+            reward_difference = round(new_avg_reward - avg_reward[i], 10)
 
             if reward_difference > 0:
                 add_action = True
@@ -92,7 +88,8 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
             elif reward_difference == 0:
                 new_u_0_inter = map(lambda j: markov_props[i][j][a] * u_0[j], list(range(nr_states)))
                 new_u_0 = sum(new_u_0_inter)
-                if (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]) > 1e-16:
+                rounded_difference = round((reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]), 10)
+                if rounded_difference > 0:
                     if policy[i] == a:
                         weird_rewards[f"u0{i},{a}"] = (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i])
                     else:
@@ -147,3 +144,17 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
             policy = g
 
     return policy, avg_reward
+
+
+def test_optimality(markov_props, reward_matrix, nr_actions, policy):
+    transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
+    reward_vector = util.create_reward_vector_for_rule(reward_matrix, policy)
+    avg_reward = compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
+
+    random_vector = np.zeros(shape=len(policy))
+    for i in range(len(policy.values())):
+        random_vector[i] = random.randint(0, nr_actions - 1)
+
+    random_vector2 = reward_vector + avg_reward + transition_matrix.dot(random_vector)
+    result = random_vector == random_vector2
+    return result
