@@ -2,6 +2,7 @@ import copy
 import typing
 
 import numpy as np
+import scipy
 
 import util
 
@@ -53,9 +54,8 @@ def compute_avg_reward_and_u_0(transition_matrix: np.matrix, reward_vector: np.a
 
     # b
     dependent_variables = np.array(dependent_vars_list)
-    result = np.linalg.lstsq(coefficient_matrix, dependent_variables)[0]
-
-    result = np.array(list(map(lambda elem: 0 if elem < 0 else elem, result)))
+    result = scipy.optimize.nnls(coefficient_matrix, dependent_variables)[0]
+    result2 = scipy.optimize.nnls(coefficient_matrix, dependent_variables)[0]
 
     avg_reward = result[:64]
     u_0 = result[64:128]
@@ -64,22 +64,39 @@ def compute_avg_reward_and_u_0(transition_matrix: np.matrix, reward_vector: np.a
 
 
 def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
-              reward_matrix: dict, avg_reward: np.array, u_0: np.array) \
+              reward_matrix: dict, avg_reward: np.array, u_0: np.array, policy) \
         -> typing.Dict[str, typing.Set]:
     result = {i: set() for i in range(nr_states)}
+
+    weird_rewards = {}
+    actual_rewards = {}
     for i in range(nr_states):
         for a in range(nr_actions):
-            new_avg_reward_inter = map(lambda j: markov_props[i][j][a] * avg_reward[j], list(range(nr_states)))
-            # TODO replace with functools?
-            new_avg_reward = sum(new_avg_reward_inter)
+            # new_avg_reward_inter = map(lambda j: markov_props[i][j][a] * avg_reward[j], list(range(nr_states)))
 
+            new_avg_reward = 0
+            for j in range(nr_states):
+                new_avg_reward += markov_props[i][j][a] * avg_reward[j]
+
+            # TODO replace with functools?
             add_action = False
-            if (new_avg_reward - avg_reward[i]) > 1e-9:
+
+            reward_difference = new_avg_reward - avg_reward[i]
+
+            if reward_difference > 0:
                 add_action = True
-            elif (new_avg_reward - avg_reward[i]) < 1e-9:
+                if policy[i] == a:
+                    weird_rewards[f">{i},{a}"] = reward_difference
+                else:
+                    actual_rewards[f">{i},{a}"] = reward_difference
+            elif reward_difference == 0:
                 new_u_0_inter = map(lambda j: markov_props[i][j][a] * u_0[j], list(range(nr_states)))
                 new_u_0 = sum(new_u_0_inter)
-                if (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]) > 1e-9:
+                if (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]) > 1e-16:
+                    if policy[i] == a:
+                        weird_rewards[f"u0{i},{a}"] = (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i])
+                    else:
+                        actual_rewards[f"u0{i},{a}"] = (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i])
                     add_action = True
 
             if add_action:
@@ -102,6 +119,9 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
     optimal_found = False
     avg_reward = None
     policy = copy.deepcopy(f)
+
+    avg_rewards = []
+
     while not optimal_found:
 
         transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
@@ -111,11 +131,12 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
         avg_reward = result[0]
         u_0 = result[1]
 
-        B = compute_B(nr_states, nr_actions, markov_props, reward_matrix, avg_reward, u_0)
+        avg_rewards.append(avg_reward)
+
+        B = compute_B(nr_states, nr_actions, markov_props, reward_matrix, avg_reward, u_0, policy)
 
         total_nr_actions_in_sets = sum(map(lambda actions_set: len(actions_set), B.values()))
         if total_nr_actions_in_sets == 0:
-            B = compute_B(nr_states, nr_actions, markov_props, reward_matrix, avg_reward, u_0)
             optimal_found = True
         else:
             g = policy

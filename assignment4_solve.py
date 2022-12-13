@@ -60,7 +60,13 @@ expected reward of at least the one obtained by the random policy!
 
 random_decision_rule = policy_random[0]
 
-policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
+random_pol = {0: 3, 1: 2, 2: 2, 3: 1, 4: 1, 5: 0, 6: 3, 7: 2, 8: 0, 9: 0, 10: 2, 11: 2, 12: 0, 13: 0, 14: 3, 15: 1,
+              16: 3, 17: 2, 18: 1, 19: 1, 20: 0, 21: 0, 22: 2, 23: 3, 24: 3, 25: 2, 26: 0, 27: 1, 28: 3, 29: 3, 30: 2,
+              31: 2, 32: 1, 33: 0, 34: 2, 35: 0, 36: 3, 37: 3, 38: 2, 39: 2, 40: 0, 41: 2, 42: 0, 43: 2, 44: 1, 45: 1,
+              46: 1, 47: 2, 48: 0, 49: 0, 50: 0, 51: 2, 52: 3, 53: 0, 54: 2, 55: 3, 56: 2, 57: 1, 58: 3, 59: 2, 60: 2,
+              61: 3, 62: 3, 63: 0}
+
+policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_pol, markov_props, reward_matrix,
                                                         env.observation_space.n,
                                                         env.action_space.n)
 
@@ -75,8 +81,9 @@ avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(transition_m
 
 reward_difference = avg_reward - avg_reward_random
 for i in range(len(reward_difference)):
-    diff = reward_difference[i]
-    assert diff >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
+    if abs(reward_difference[i]) > 1e-15:
+        assert reward_difference[
+                   i] >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
 
 expected_reward_random_stationary_policy = util.compute_value_vector(alpha, random_decision_rule,
                                                                      markov_props, reward_matrix)[0]
