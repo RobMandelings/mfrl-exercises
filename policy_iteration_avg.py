@@ -55,7 +55,6 @@ def compute_avg_reward_and_u_0(transition_matrix: np.matrix, reward_vector: np.a
     # b
     dependent_variables = np.array(dependent_vars_list)
     result = np.linalg.lstsq(coefficient_matrix, dependent_variables)[0]
-    result = np.array(list(map(lambda x: round(x, 10), result)))
 
     avg_reward = result[:64]
     u_0 = result[64:128]
@@ -77,19 +76,18 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
 
             # TODO replace with functools?
             add_action = False
-            reward_difference = round(new_avg_reward - avg_reward[i], 10)
+            reward_difference = new_avg_reward - avg_reward[i]
 
-            if reward_difference > 0:
+            if reward_difference > 1e-9:
                 add_action = True
                 if policy[i] == a:
                     weird_rewards[f">{i},{a}"] = reward_difference
                 else:
                     actual_rewards[f">{i},{a}"] = reward_difference
-            elif reward_difference == 0:
+            elif 0 <= reward_difference < 1e-9:
                 new_u_0_inter = map(lambda j: markov_props[i][j][a] * u_0[j], list(range(nr_states)))
                 new_u_0 = sum(new_u_0_inter)
-                rounded_difference = round((reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]), 10)
-                if rounded_difference > 0:
+                if (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i]) > 1e-9:
                     if policy[i] == a:
                         weird_rewards[f"u0{i},{a}"] = (reward_matrix[i][a] + new_u_0) - (avg_reward[i] + u_0[i])
                     else:
@@ -142,6 +140,8 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
                 if len(actions) > 0:
                     g[i] = list(actions)[0]
             policy = g
+
+    avg_reward = list(map(lambda x: round(x, 10), avg_reward))
 
     return policy, avg_reward
 

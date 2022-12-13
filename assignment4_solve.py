@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 
 import policy_iteration
 import policy_iteration_avg
@@ -68,23 +69,20 @@ policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_r
 transition_matrix = util.create_transition_matrix_for_rule(markov_props, random_decision_rule)
 reward_vector = util.create_reward_vector_for_rule(reward_matrix, random_decision_rule)
 
+avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
+avg_reward_random = np.array(list(map(lambda x: round(x, 10), avg_reward_random)))
+
+reward_difference = avg_reward - avg_reward_random
+for i in range(len(reward_difference)):
+    assert reward_difference[
+               i] >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
+
 alpha = 0.999
 policy_discounted, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props,
                                                                  reward_matrix,
                                                                  env.observation_space.n,
                                                                  env.action_space.n)
 
-avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
-policy_iteration_avg.test_optimality(markov_props, reward_matrix, env.action_space.n, policy)
-
-reward_difference = avg_reward - avg_reward_random
-for i in range(len(reward_difference)):
-    if abs(reward_difference[i]) > 1e-15:
-        assert reward_difference[
-                   i] >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
-
-expected_reward_random_stationary_policy = util.compute_value_vector(alpha, random_decision_rule,
-                                                                     markov_props, reward_matrix)[0]
 
 # TODO compute average reward of random policy using theorem 1.4.7 (item 1)
 # TODO output the policy for this assignment
@@ -108,4 +106,6 @@ if True:
     env.close()
 
 print(
-    f'Expected reward for the Random Stationary Policy (infinite horizon): {expected_reward_random_stationary_policy}')
+    f'Policy using policy iteration with average reward: {policy}')
+print(
+    f'Policy with discounted reward: {policy_discounted}')
