@@ -47,9 +47,6 @@ policy_random = {t: {i: env.action_space.sample()
                      for i in range(env.observation_space.n)}
                  for t in range(T)}
 
-alpha = 0.99
-epsilon = 0.00001
-
 # Policy evaluation: here's where YOU also code
 """
 Insert here your code to evaluate
@@ -61,9 +58,9 @@ expected reward of at least the one obtained by the random policy!
 
 random_decision_rule = policy_random[0]
 # Policy and average reward is computed with policy iteration here
-avg_policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
-                                                            env.observation_space.n,
-                                                            env.action_space.n)
+avg_policy, avg_reward = policy_iteration_avg.create_avg_policy(random_decision_rule, markov_props, reward_matrix,
+                                                                env.observation_space.n,
+                                                                env.action_space.n)
 
 # Average reward is computed for the random policy
 avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(reward_matrix, markov_props, random_decision_rule)[
@@ -80,10 +77,10 @@ for i in range(len(reward_difference)):
 
 # Compute discounted policy, which is similar to the avg_policy for alpha close to 1
 alpha = 0.999
-discounted_policy, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props,
-                                                                 reward_matrix,
-                                                                 env.observation_space.n,
-                                                                 env.action_space.n)
+discounted_policy, value_vector = policy_iteration.create_discounted_policy(alpha, random_decision_rule, markov_props,
+                                                                            reward_matrix,
+                                                                            env.observation_space.n,
+                                                                            env.action_space.n)
 
 # TODO compute average reward of random policy using theorem 1.4.7 (item 1)
 # TODO output the policy for this assignment

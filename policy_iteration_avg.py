@@ -1,5 +1,4 @@
 import copy
-import random
 import typing
 
 import numpy as np
@@ -60,7 +59,6 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
             new_avg_reward_inter = map(lambda j: markov_props[i][j][a] * avg_reward[j], list(range(nr_states)))
             new_avg_reward = sum(new_avg_reward_inter)
 
-            # TODO replace with functools?
             add_action = False
             reward_difference = new_avg_reward - avg_reward[i]
 
@@ -86,9 +84,8 @@ def compute_B(nr_states: int, nr_actions: int, markov_props: dict,
     return result
 
 
-def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
+def create_avg_policy(f, markov_props, reward_matrix, nr_states, nr_actions):
     """
-    :param alpha:
     :param f: initial deterministic policy
     :param markov_props:
     :param reward_matrix:
@@ -127,17 +124,3 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
     avg_reward = list(map(lambda x: round(x, 10), avg_reward))
 
     return policy, avg_reward
-
-
-def test_optimality(markov_props, reward_matrix, nr_actions, policy):
-    transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
-    reward_vector = util.create_reward_vector_for_rule(reward_matrix, policy)
-    avg_reward = compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
-
-    random_vector = np.zeros(shape=len(policy))
-    for i in range(len(policy.values())):
-        random_vector[i] = random.randint(0, nr_actions - 1)
-
-    random_vector2 = reward_vector + avg_reward + transition_matrix.dot(random_vector)
-    result = random_vector == random_vector2
-    return result

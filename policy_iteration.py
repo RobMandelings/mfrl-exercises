@@ -7,7 +7,7 @@ import functools
 import util
 
 
-def create_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_actions):
+def create_discounted_policy(alpha, f, markov_properties, reward_matrix, nr_states, nr_actions):
     """
     Creates a stationary deterministic policy using the policy iteration algorithm
     :param alpha: parameter used for infinite horizons

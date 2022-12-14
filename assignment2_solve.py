@@ -51,9 +51,9 @@ policy_random = {t: {i: env.action_space.sample()
 random_decision_rule = policy_random[0]
 
 alpha = 0.999
-policy, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
-                                                      env.observation_space.n,
-                                                      env.action_space.n)
+policy, value_vector = policy_iteration.create_discounted_policy(alpha, random_decision_rule, markov_props, reward_matrix,
+                                                                 env.observation_space.n,
+                                                                 env.action_space.n)
 
 # Policy evaluation: here's where YOU also code
 """
