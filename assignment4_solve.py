@@ -3,7 +3,6 @@ import numpy as np
 
 import policy_iteration
 import policy_iteration_avg
-import util
 
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
 """
@@ -61,28 +60,30 @@ expected reward of at least the one obtained by the random policy!
 """
 
 random_decision_rule = policy_random[0]
+# Policy and average reward is computed with policy iteration here
+avg_policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
+                                                            env.observation_space.n,
+                                                            env.action_space.n)
 
-policy, avg_reward = policy_iteration_avg.create_policy(alpha, random_decision_rule, markov_props, reward_matrix,
-                                                        env.observation_space.n,
-                                                        env.action_space.n)
+# Average reward is computed for the random policy
+avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(reward_matrix, markov_props, random_decision_rule)[
+    0]
 
-transition_matrix = util.create_transition_matrix_for_rule(markov_props, random_decision_rule)
-reward_vector = util.create_reward_vector_for_rule(reward_matrix, random_decision_rule)
+# Average reward is rounded up to 9 decimals
+avg_reward_random = np.array(list(map(lambda x: round(x, 9), avg_reward_random)))
 
-avg_reward_random = policy_iteration_avg.compute_avg_reward_and_u_0(transition_matrix, reward_vector)[0]
-avg_reward_random = np.array(list(map(lambda x: round(x, 10), avg_reward_random)))
-
+# Both are zero, so the average reward is as least as good as the random average reward
 reward_difference = avg_reward - avg_reward_random
 for i in range(len(reward_difference)):
     assert reward_difference[
                i] >= 0, f"Reward for {i} of optimal is not bigger than random policy ({avg_reward[i]} not > {avg_reward_random[i]})"
 
+# Compute discounted policy, which is similar to the avg_policy for alpha close to 1
 alpha = 0.999
-policy_discounted, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props,
+discounted_policy, value_vector = policy_iteration.create_policy(alpha, random_decision_rule, markov_props,
                                                                  reward_matrix,
                                                                  env.observation_space.n,
                                                                  env.action_space.n)
-
 
 # TODO compute average reward of random policy using theorem 1.4.7 (item 1)
 # TODO output the policy for this assignment
@@ -95,7 +96,7 @@ if True:
     for t in range(T):
         env.render()
         # policy is not dependent on time (stationary)
-        action = policy[state]
+        action = avg_policy[state]
         print(f"Action = {action}")
         state, reward, done, _ = env.step(action)
         # if the MDP is stuck, we end the simulation here
@@ -105,7 +106,15 @@ if True:
             break
     env.close()
 
+policy_differences = {}
+for i in range(env.observation_space.n):
+    policy_differences[i] = (avg_policy[i] != discounted_policy[i])
+print(f'Average reward for the optimal policy: {avg_reward}')
 print(
-    f'Policy using policy iteration with average reward: {policy}')
+    f'Policy using policy iteration with average reward: {list(avg_policy.items())}')
 print(
-    f'Policy with discounted reward: {policy_discounted}')
+    f'Policy with discounted reward: {list(discounted_policy.items())}')
+print(
+    f'Differences between discounted policy and the policy with average reward (true if there is a difference, false if they are the same). '
+    f'You can see the average policy is similar to the discounted policy')
+print(list(policy_differences.items()))

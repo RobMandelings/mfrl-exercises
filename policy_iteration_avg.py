@@ -7,28 +7,14 @@ import numpy as np
 import util
 
 
-def compute_stationary_matrix(transition_matrix: np.matrix) -> np.matrix:
-    approximate = np.matrix(np.identity(transition_matrix.size))
-    for i in range(10000):
-        approximate = np.matmul(approximate, transition_matrix)
-
-    return approximate
-
-
-def compute_deviation_matrix(fundamental_matrix: np.matrix, stationary_matrix: np.matrix) -> np.matrix:
-    return fundamental_matrix - stationary_matrix
-
-
-def compute_fundamental_matrix(transition_matrix: np.matrix, stationary_matrix: np.matrix) -> np.matrix:
-    fundamental_matrix = np.linalg.inv(np.identity(transition_matrix.size) - transition_matrix + stationary_matrix)
-    return fundamental_matrix
-
-
-def compute_avg_reward_and_u_0(transition_matrix: np.matrix, reward_vector: np.array) -> typing.Tuple[
-    np.array, np.array]:
+def compute_avg_reward_and_u_0(reward_matrix, markov_props, policy) \
+        -> typing.Tuple[np.array, np.array]:
     """
     :return: 1-D array of average rewards for each state
     """
+
+    transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
+    reward_vector = util.create_reward_vector_for_rule(reward_matrix, policy)
 
     identity_matrix = np.identity(len(transition_matrix))
     I_P = identity_matrix - transition_matrix
@@ -119,10 +105,7 @@ def create_policy(alpha, f, markov_props, reward_matrix, nr_states, nr_actions):
 
     while not optimal_found:
 
-        transition_matrix = util.create_transition_matrix_for_rule(markov_props, policy)
-        reward_vector = util.create_reward_vector_for_rule(reward_matrix, policy)
-
-        result = compute_avg_reward_and_u_0(transition_matrix, reward_vector)
+        result = compute_avg_reward_and_u_0(reward_matrix, markov_props, policy)
         avg_reward = result[0]
         u_0 = result[1]
 
