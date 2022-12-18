@@ -54,7 +54,7 @@ alpha = 0.999
 
 policies = []
 for gamma in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-    q_learning_pol = q_learning.create_policy(env, gamma=0.3, alpha=alpha, max_iterations=1_000_000)
+    q_learning_pol = q_learning.create_policy(env, gamma=gamma, alpha=alpha, max_iterations=1_000_000)
     policies.append(q_learning_pol)
 
 rewards = list(map(lambda pol: util.compute_value_vector(alpha, pol, markov_props, reward_matrix), policies))
