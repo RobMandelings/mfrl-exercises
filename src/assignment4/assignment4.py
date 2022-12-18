@@ -1,8 +1,8 @@
 import gym
 import numpy as np
 
-import policy_iteration
 import policy_iteration_avg
+from src.assignment2 import policy_iteration
 
 env = gym.make("FrozenLake8x8-v1", desc=None, map_name=None, is_slippery=True)
 """
