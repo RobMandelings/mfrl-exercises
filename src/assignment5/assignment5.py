@@ -52,11 +52,17 @@ policy dictionary below by the results of your computation
 
 alpha = 0.999
 
-q_learning_pol = q_learning.create_policy(env, gamma=0.5, alpha=alpha, max_iterations=100_000)
+policies = []
+for gamma in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    q_learning_pol = q_learning.create_policy(env, gamma=0.3, alpha=alpha, max_iterations=1_000_000)
+    policies.append(q_learning_pol)
+
+rewards = list(map(lambda pol: util.compute_value_vector(alpha, pol, markov_props, reward_matrix), policies))
 
 T = 10  # Given horizon
-random_policy = {i: env.action_space.sample()
-                 for i in range(env.observation_space.n)}
+random_policy = np.zeros(shape=env.observation_space.n)
+random_pol_init = np.vectorize(lambda x: env.action_space.sample())
+random_policy = random_pol_init(random_policy)
 
 # Policy evaluation: here's where YOU also code
 """
@@ -84,8 +90,6 @@ env.close()
 
 reward_q_learning_pol = util.compute_value_vector(alpha, q_learning_pol, markov_props, reward_matrix)
 reward_random_policy = util.compute_value_vector(alpha, random_policy, markov_props, reward_matrix)
-
-assert (reward_q_learning_pol - reward_random_policy) >= 0
 
 print(f"Expected discounted rewards for Q learned policy vs. random policy")
 print(f"Q learned policy: {reward_q_learning_pol[0]}")

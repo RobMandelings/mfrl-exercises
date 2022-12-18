@@ -1,6 +1,5 @@
 import gym.wrappers
 import numpy as np
-import numpy.random
 
 
 def get_action_for_state(Q: np.array, state):
@@ -18,7 +17,7 @@ def create_policy(env: gym.wrappers.TimeLimit, gamma, alpha, max_iterations):
     # learning rates => single learning rate?
 
     Q = np.empty((env.observation_space.n, env.action_space.n))
-    initializer = np.vectorize(lambda x: numpy.random.uniform(10, 20))
+    initializer = np.vectorize(lambda x: 10)
     Q = initializer(Q)
 
     state = env.reset()
@@ -27,10 +26,15 @@ def create_policy(env: gym.wrappers.TimeLimit, gamma, alpha, max_iterations):
         action = get_action_for_state(Q, state)
         next_state, reward, done, info = env.step(action)
 
-        Q[state, action] = (1 - gamma) * Q[state, action] + \
-                           gamma * (reward + alpha * np.max(Q[next_state, :]))
+        new_value = (1 - gamma) * Q[state, action] + \
+                    gamma * (reward + alpha * np.max(Q[next_state, :]))
+        Q[state, action] = new_value
 
-        state = next_state
+        if done:
+            state = env.reset()
+        else:
+            state = next_state
+
         iteration += 1
 
     env.reset()
