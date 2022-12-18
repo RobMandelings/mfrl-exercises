@@ -1,5 +1,9 @@
 import gym
+import numpy as np
 import pygame
+
+import q_learning
+import util
 
 # print(gym.__version__)
 
@@ -22,29 +26,37 @@ dictionary of lists:
 P[s][a] = [(probability, nextstate, reward, done), ...]
 """
 
-# first, we initialize the structures with zeros
-prob = {i: {j: {a: 0 for a in range(env.action_space.n)}
-            for j in range(env.observation_space.n)}
-        for i in range(env.observation_space.n)}
-rewd = {i: {j: {a: 0 for a in range(env.action_space.n)}
-            for j in range(env.observation_space.n)}
-        for i in range(env.observation_space.n)}
+markov_props = np.zeros(shape=(env.observation_space.n,
+                               env.observation_space.n,
+                               env.action_space.n))
+
+"""
+Row (i, j): results in tuple, each element: reward for doing action
+"Reward for doing action a while going from state i to state j"
+"""
+
+# ri_a: reward for action a in state i
+reward_matrix = np.zeros(shape=(env.observation_space.n, env.action_space.n))
 # then, we fill them with the actual information
 for i in range(env.observation_space.n):
     for a in range(env.action_space.n):
         for (p, j, r, d) in env.P[i][a]:
-            prob[i][j][a] += p
-            rewd[i][j][a] += r
+            markov_props[i, j, a] += p
+            reward_matrix[i, a] += r * p
 
 # Policy computation: here's where YOU code
 """
 Insert your clever policy computation here! make sure to replace the
 policy dictionary below by the results of your computation
 """
+
+alpha = 0.999
+
+q_learning_pol = q_learning.create_policy(env, gamma=0.5, alpha=alpha, max_iterations=100_000)
+
 T = 10  # Given horizon
-policy = {t: {i: env.action_space.sample()
-              for i in range(env.observation_space.n)}
-          for t in range(T)}
+random_policy = {i: env.action_space.sample()
+                 for i in range(env.observation_space.n)}
 
 # Policy evaluation: here's where YOU also code
 """
@@ -59,9 +71,9 @@ expected reward of at least the one obtained by the random policy!
 state = env.reset()
 for i, t in enumerate(range(T)):
     env.render()
-    action = policy[t][state]
+    action = q_learning_pol[state]
     print(f"Action = {action}")
-    state, reward, done, _ = env.step(action)
+    state, reward, done, info = env.step(action)
 
     # if the MDP is stuck, we end the simulation here
     if done:
@@ -69,3 +81,12 @@ for i, t in enumerate(range(T)):
         print(f"Episode finished after {t + 1} timesteps")
         break
 env.close()
+
+reward_q_learning_pol = util.compute_value_vector(alpha, q_learning_pol, markov_props, reward_matrix)
+reward_random_policy = util.compute_value_vector(alpha, random_policy, markov_props, reward_matrix)
+
+assert (reward_q_learning_pol - reward_random_policy) >= 0
+
+print(f"Expected discounted rewards for Q learned policy vs. random policy")
+print(f"Q learned policy: {reward_q_learning_pol[0]}")
+print(f"Random policy: {reward_random_policy[0]}")

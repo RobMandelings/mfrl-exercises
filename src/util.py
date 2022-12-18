@@ -1,11 +1,10 @@
 import numpy as np
 
 
-def compute_value_vector(alpha, stationary_policy, markov_properties, reward_matrix):
+def compute_value_vector(alpha, stationary_policy: np.array, markov_properties: np.array, reward_matrix: np.array):
     """
     Computes the value vector using the provided data, for a total expected discount problem
     :param alpha: parameter used for infinite horizons
-    :param stationary_policy: dictionary with <state, action> key-value pairs
     :param markov_properties: matrix containing all markov properties
     :param reward_matrix: matrix in dictionary form representing the rewards for each action from each state
     :return: value vector for a stationary policy with infinite horizon
@@ -14,15 +13,6 @@ def compute_value_vector(alpha, stationary_policy, markov_properties, reward_mat
     reward_vector = create_reward_vector_for_rule(reward_matrix, stationary_policy)
     value_vector = np.linalg.inv(np.identity(len(p)) - alpha * p).dot(reward_vector)
     return value_vector
-
-
-def convert_to_dict(value_vector: np.array):
-    """
-    Converts the value vector into a numpy array
-    :param value_vector:
-    :return: dictionary where each start state is a key and each expected reward is a value
-    """
-    return dict(enumerate(value_vector, 0))
 
 
 def mult_trans_matrix(matrix1: np.array, matrix2: np.array):
@@ -68,9 +58,9 @@ def calculate_total_expected_reward(nr_states, nr_actions, start_state, markov_p
     return sum(expected_reward_per_period)
 
 
-def create_reward_vector_for_rule(reward_matrix, deterministic_rule) -> np.array:
+def create_reward_vector_for_rule(reward_matrix: np.array, deterministic_rule: np.array) -> np.array:
     """
     :return: Returns the rewards for the deterministic rule
     """
-    reward_vector = np.array([reward_matrix[i][a] for i, a in enumerate(deterministic_rule.values())])
+    reward_vector = np.array([reward_matrix[i, deterministic_rule[i]] for i in range(len(deterministic_rule))])
     return reward_vector
