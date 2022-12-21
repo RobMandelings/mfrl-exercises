@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 
 import policy_iteration
 # We will load a DiscreteEnv and retrieve the probability and reward
@@ -20,9 +21,9 @@ of going from state i to state j when doing action a.
 => Is not a transition matrix as the probabilty of performing action a 
 is not yet included (transition matrices are induced by policies)
 """
-markov_props = {i: {j: {a: 0 for a in range(env.action_space.n)}
-                    for j in range(env.observation_space.n)}
-                for i in range(env.observation_space.n)}
+markov_props = np.zeros(shape=(env.observation_space.n,
+                               env.observation_space.n,
+                               env.action_space.n))
 
 """
 Row (i, j): results in tuple, each element: reward for doing action
@@ -30,13 +31,13 @@ Row (i, j): results in tuple, each element: reward for doing action
 """
 
 # ri_a: reward for action a in state i
-reward_matrix = {i: {a: 0 for a in range(env.action_space.n)} for i in range(env.observation_space.n)}
+reward_matrix = np.zeros(shape=(env.observation_space.n, env.action_space.n))
 # then, we fill them with the actual information
 for i in range(env.observation_space.n):
     for a in range(env.action_space.n):
         for (p, j, r, d) in env.P[i][a]:
-            markov_props[i][j][a] += p
-            reward_matrix[i][a] += r * p
+            markov_props[i, j, a] += p
+            reward_matrix[i, a] += r * p
 
 # Policy computation: here's where YOU code
 """
@@ -51,7 +52,8 @@ policy_random = {t: {i: env.action_space.sample()
 random_decision_rule = policy_random[0]
 
 alpha = 0.999
-policy, value_vector = policy_iteration.create_discounted_policy(alpha, random_decision_rule, markov_props, reward_matrix,
+policy, value_vector = policy_iteration.create_discounted_policy(alpha, random_decision_rule, markov_props,
+                                                                 reward_matrix,
                                                                  env.observation_space.n,
                                                                  env.action_space.n)
 
@@ -68,9 +70,11 @@ expected_reward_policy_iteration = value_vector[0]
 expected_reward_random_policy_finite_horizon = util.calculate_total_expected_reward(env.observation_space.n,
                                                                                     env.action_space.n, 0, markov_props,
                                                                                     reward_matrix, policy_random)
-expected_reward_random_stationary_policy = util.convert_to_dict(
-    util.compute_value_vector(alpha, random_decision_rule,
-                              markov_props, reward_matrix))[0]
+
+expected_reward_policy_iteration2 = util.compute_value_vector(alpha, policy, markov_props, reward_matrix)
+
+expected_reward_random_stationary_policy = \
+    util.compute_value_vector(alpha, random_decision_rule, markov_props, reward_matrix)[0]
 
 # Simulation: you can try your policy here, just remove the false conditional
 if True:

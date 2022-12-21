@@ -54,7 +54,7 @@ def create_discounted_policy(alpha, f, markov_properties, reward_matrix, nr_stat
             f = g
         else:
             # Return policy and value vector. Value vector will be returned as a dictionary
-            result = f, util.convert_to_dict(value_vector)
+            result = f, value_vector
         nr_iterations += 1
 
     return result

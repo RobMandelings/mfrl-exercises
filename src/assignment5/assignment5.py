@@ -52,12 +52,8 @@ policy dictionary below by the results of your computation
 
 alpha = 0.999
 
-policies = []
-for gamma in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-    q_learning_pol = q_learning.create_policy(env, gamma=gamma, alpha=alpha, max_iterations=1_000_000)
-    policies.append(q_learning_pol)
-
-rewards = list(map(lambda pol: util.compute_value_vector(alpha, pol, markov_props, reward_matrix), policies))
+q_learning_pol = q_learning.create_policy(env, alpha=alpha, max_iterations=100_000)
+rewards = util.compute_value_vector(alpha, q_learning_pol, markov_props, reward_matrix)
 
 T = 10  # Given horizon
 random_policy = np.zeros(shape=env.observation_space.n)

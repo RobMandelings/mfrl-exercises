@@ -13,27 +13,29 @@ def get_policy_for_Q(Q: np.array) -> np.array:
     return policy
 
 
-def create_policy(env: gym.wrappers.TimeLimit, gamma, alpha, max_iterations):
+def create_policy(env: gym.wrappers.TimeLimit, alpha, max_iterations):
     # learning rates => single learning rate?
 
     Q = np.empty((env.observation_space.n, env.action_space.n))
-    initializer = np.vectorize(lambda x: 10)
+    initializer = np.vectorize(lambda x: 5.0)
     Q = initializer(Q)
 
     state = env.reset()
     iteration = 0
+    gamma = 0.2
+
     while iteration < max_iterations:
+
         action = get_action_for_state(Q, state)
         next_state, reward, done, info = env.step(action)
+
+        if done and next_state == state:
+            state = env.reset()
 
         new_value = (1 - gamma) * Q[state, action] + \
                     gamma * (reward + alpha * np.max(Q[next_state, :]))
         Q[state, action] = new_value
-
-        if done:
-            state = env.reset()
-        else:
-            state = next_state
+        state = next_state
 
         iteration += 1
 
