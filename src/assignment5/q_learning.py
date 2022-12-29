@@ -30,7 +30,7 @@ def create_policy(env: gym.wrappers.TimeLimit, alpha, max_iterations):
         next_state, reward, done, info = env.step(action)
 
         if done and next_state == state:
-            state = env.reset()
+            next_state = env.reset()
 
         new_value = (1 - gamma) * Q[state, action] + \
                     gamma * (reward + alpha * np.max(Q[next_state, :]))
