@@ -41,5 +41,3 @@ def create_policy(env: gym.wrappers.TimeLimit, alpha, max_iterations):
 
     env.reset()
     return get_policy_for_Q(Q)
-
-    # TODO check: is assumption that
